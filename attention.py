@@ -4,10 +4,9 @@ from torch.nn import functional as F
 import math
 import numpy as np
 
-# The selfAttention class is a module in PyTorch that implements self-attention mechanism.
-class selfAttention(nn.Module):
+class SelfAttention(nn.Module):
     
-    def __init__(self, n_heads, d_embed, in_bias=False, out_bias=False):
+    def __init__(self, n_heads, d_embed, in_bias=True, out_bias=True):
         super().__init__()
         
         self.in_proj = nn.Linear(d_embed, 3*d_embed, bias=in_bias)
@@ -18,6 +17,7 @@ class selfAttention(nn.Module):
         
     def forward(self, x, mask=False):
         
+        input_shape = x.shape
         batch_size, seq_len, d_embed = x.shape
         temp_shape = (batch_size, seq_len, self.n_heads, self.d_heads)
         
@@ -41,5 +41,16 @@ class selfAttention(nn.Module):
             weights.masked_fill_(mask, float('-inf'))
             
         weight /= math.sqrt(self.d_heads)
+        weights = F.softmax(weights, dim=-1)
+        
+        #b,h,s,s @ b,h,s,d/h --> b,h,s,d/h
+        out = weights @ v
+        
+        out = out.transpose(1,2).contiguous()
+        out = out.reshape(input_shape)
+        
+        out = self.out_proj(out)
+        
+        return out
             
         
