@@ -1,1 +1,3 @@
-# StableDiffusion components: VAEEncoder, Decoder, Attention, UNet
+### StableDiffusion components: 
+
+VAEEncoder, Decoder, Attention, UNet
